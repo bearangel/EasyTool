@@ -13,9 +13,17 @@ java {
     }
 }
 
+// 插件仓库配置使用阿里云
+buildscript {
+    repositories {
+        maven(url = "https://maven.aliyun.com/repository/public")
+    }
+}
+
+// 依赖仓库配置使用阿里云
 repositories {
-    mavenCentral()
     maven { url = uri("https://maven.aliyun.com/repository/public") }
+    mavenCentral()
 }
 
 val jLineVersion = "3.27.1"
