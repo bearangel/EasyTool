@@ -4,8 +4,10 @@ import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.Project;
+import org.gitlab4j.api.models.RepositoryFile;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * GitLab工具类
@@ -37,6 +39,16 @@ public class GitLab {
     }
 
     /**
+     * 通过项目ID获取项目对象
+     * @param projectId 项目ID
+     * @return 方法会项目对象 {@link Project}
+     * @throws GitLabApiException
+     */
+    public Project getProject(long projectId) throws GitLabApiException {
+       return gitLabApi.getProjectApi().getProject(projectId);
+    }
+
+    /**
      * 创建分支
      *
      * @param project      项目对象
@@ -48,6 +60,46 @@ public class GitLab {
     public String createBranch(Project project, String sourceBranch, String targetBranch) throws GitLabApiException {
         Branch branch = gitLabApi.getRepositoryApi().createBranch(project.getId(), targetBranch, sourceBranch);
         return branch.getName();
+    }
+
+    /**
+     * 获取某个项目所有分支
+     * @param project 项目对象 {@link Project}
+     * @return 返回该项目分支列表 {@link Branch}
+     * @throws GitLabApiException
+     */
+    public List<Branch> getBranches(Project project) throws GitLabApiException {
+        long projectId = project.getId();
+        return gitLabApi.getRepositoryApi().getBranches(projectId);
+    }
+
+    /**
+     * 获取分支
+     * @param project 项目对象
+     * @param brancheName 分支名称
+     * @return 获取分支对象，如果没有则返回null
+     * @throws GitLabApiException
+     */
+    public Branch getBranches(Project project, String brancheName) throws GitLabApiException {
+        long projectId = project.getId();
+        List<Branch> branches = gitLabApi.getRepositoryApi().getBranches(projectId, brancheName);
+        return branches.stream()
+                .filter(branch -> Objects.equals(branch.getName(), brancheName))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * 获取项目中，某个分支下的问题
+     * @param project 项目名对象
+     * @param branch 分支对象
+     * @param filePath 文件路径
+     * @return
+     * @throws GitLabApiException
+     */
+    public RepositoryFile getRepositoryFile(final Project project, final Branch branch, final String filePath) throws GitLabApiException {
+        long projectId = project.getId();
+        String branchName = branch.getName();
+        return gitLabApi.getRepositoryFileApi().getFile(projectId, filePath, branchName);
     }
 
     /**
