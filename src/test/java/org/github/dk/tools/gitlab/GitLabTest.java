@@ -7,9 +7,10 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.RepositoryFile;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
-import java.util.RandomAccess;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 1.8
  */
 class GitLabTest {
+
+    final long projectId = 62418892;
 
     GitLab getGitLab(){
 
@@ -55,29 +58,61 @@ class GitLabTest {
 
         List<Project> projectList = gitLab.listOwnedProjects();
         Project project = projectList.get(0);
-        String createBranch = gitLab.createBranch(project, targetBranch, sourceBranch);
+        String createBranch = gitLab.createBranch(project, sourceBranch, targetBranch);
         assertEquals(targetBranch, createBranch);
     }
 
+    /**
+     * 测试获取项目分支
+     * @throws GitLabApiException
+     */
     @Test
     void getBranches() throws GitLabApiException {
         GitLab gitLab = getGitLab();
-        long projectId = 62418892;
         Project project = gitLab.getProject(projectId);
         List<Branch> branches = gitLab.getBranches(project);
         assertNotNull(branches);
     }
 
+    /**
+     * 测试获取分支文件内容
+     * @throws GitLabApiException
+     */
     @Test
     void getRepositoryFile() throws GitLabApiException {
         GitLab gitLab = getGitLab();
-        long projectId = 62418892;
         Project project = gitLab.getProject(projectId);
-        Branch branche = gitLab.getBranches(project, "main");
-        if (branche == null) {
+        Branch branch = gitLab.getBranch(project, "master930");
+        if (branch == null) {
             System.out.println("找不到分支");
+            return;
         }
-//        RepositoryFile repositoryFile = gitLab.getRepositoryFile(project, branche, )
+        String filePath = "README.md";
+        RepositoryFile repositoryFile = gitLab.getRepositoryFile(project, branch, filePath);
+        assertNotNull(repositoryFile.getContent());
     }
+
+    /**
+     * 测试文件修改
+     * @throws GitLabApiException
+     */
+    @Test
+    void updateFile() throws GitLabApiException {
+        GitLab gitLab = getGitLab();
+        Project project = gitLab.getProject(projectId);
+        String branchName = "master930";
+        Branch branch = gitLab.getBranch(project, "master930");
+        if (branch == null) {
+            System.out.println("找不到分支");
+            return;
+        }
+        String filePath = "README.md";
+        RepositoryFile repositoryFile = gitLab.getRepositoryFile(project, branch, filePath);
+        String newContent = new String(Base64.getEncoder()
+                .encodeToString("test测试!@#$%^&*()_+|｜」「：“……&#¥%……&#¥%@#……#¥%".getBytes(StandardCharsets.UTF_8)));
+        repositoryFile.setContent(newContent);
+        gitLab.updateFile(project, repositoryFile, branchName, "测试提交");
+    }
+
 
 }
