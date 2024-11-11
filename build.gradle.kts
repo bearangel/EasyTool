@@ -30,9 +30,8 @@ val jLineVersion = "3.27.1"
 val gitlab4jVersion = "6.0.0-rc.6"
 
 dependencies {
-    implementation("org.jline:jline:${jLineVersion}")
+    implementation("info.picocli:picocli:4.7.6")
     implementation("org.gitlab4j:gitlab4j-api:${gitlab4jVersion}")
-//    implementation("javax.ws.rs:javax.ws.rs-api:2.1.1")
     testImplementation(platform("org.junit:junit-bom:5.10.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
