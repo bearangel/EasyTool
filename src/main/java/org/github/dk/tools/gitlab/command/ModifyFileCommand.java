@@ -1,6 +1,7 @@
 package org.github.dk.tools.gitlab.command;
 
 import org.github.dk.tools.gitlab.GitLab;
+import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
@@ -33,6 +34,9 @@ public class ModifyFileCommand implements Runnable {
     @Option(names = {"-t", "--token"}, required = true, description = "访问令牌")
     private String accessToken;
 
+    @Option(names = {"--apiVersion"}, description = "gitlab api版本，可选择v3、v4，默认值是v4", defaultValue = "v4")
+    private String apiVersion;
+
     @Option(names = {"-p", "--projectId"}, required = true, description = "项目ID")
     private Long projectId;
 
@@ -54,8 +58,13 @@ public class ModifyFileCommand implements Runnable {
     @Override
     public void run() {
         try {
+            GitLabApi.ApiVersion gitLabApiVersion = switch (apiVersion) {
+                case "v3" -> GitLabApi.ApiVersion.V3;
+                default -> GitLabApi.ApiVersion.V4;
+            };
+            System.out.println(MessageFormat.format("开始使用{0}版本API操作gitLab", apiVersion));
             GitLab gitLab = new GitLab.Builder()
-                    .setApiVersion(GitLabApi.ApiVersion.V4)
+                    .setApiVersion(gitLabApiVersion)
                     .setHostUrl(gitLabUrl)
                     .setPersonalAccessToken(accessToken)
                     .build();
@@ -72,7 +81,7 @@ public class ModifyFileCommand implements Runnable {
 
                     String commitContent = "";
                     if (regex != null) {
-                        String oldContent = repositoryFile.getDecodedContentAsString();
+                        String oldContent = getDecodedContentAsString(repositoryFile);
                         commitContent = oldContent.replaceAll(regex, newContent);
                     } else {
                         commitContent = newContent;
@@ -101,5 +110,19 @@ public class ModifyFileCommand implements Runnable {
             return Collections.singletonList(branchName);
         }
         return gitLab.getBranches(projectId).stream().map(Branch::getName).toList();
+    }
+
+    /**
+     * 由于返回的base64字符串可能会出现\n\r,默认的{@link RepositoryFile#getDecodedContentAsString()}会出现错误，所以这里自行处理
+     * @param repositoryFile 文件对象
+     * @return 返回解码字符串
+     */
+    private String getDecodedContentAsString(RepositoryFile repositoryFile) {
+        String content = repositoryFile.getContent();
+        if (Constants.Encoding.BASE64.equals(repositoryFile.getEncoding())) {
+            content = content.replace("\n", "").replace("\r", "");
+            return new String(Base64.getDecoder().decode(content));
+        }
+        return content;
     }
 }

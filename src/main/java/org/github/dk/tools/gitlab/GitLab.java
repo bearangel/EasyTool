@@ -116,6 +116,9 @@ public class GitLab {
      * @throws GitLabApiException 异常
      */
     public RepositoryFile getRepositoryFile(final long projectId, final String branchName, final String filePath) throws GitLabApiException {
+        if (gitLabApi.getApiVersion() == GitLabApi.ApiVersion.V3) {
+            return gitLabApi.getRepositoryFileApi().getFile(filePath, projectId, branchName);
+        }
         return gitLabApi.getRepositoryFileApi().getFile(projectId, filePath, branchName);
     }
 
