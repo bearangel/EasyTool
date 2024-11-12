@@ -10,7 +10,8 @@ import picocli.CommandLine;
  * @since Java 17
  */
 
-@CommandLine.Command(name = "gitLab", version = "1.0.0", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "gitLab", version = "1.0.0",
+        mixinStandardHelpOptions = true, subcommands = {ModifyFileCommand.class})
 public class GitLabCommand implements Runnable{
 
     @Override

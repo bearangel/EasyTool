@@ -69,8 +69,7 @@ class GitLabTest {
     @Test
     void getBranches() throws GitLabApiException {
         GitLab gitLab = getGitLab();
-        Project project = gitLab.getProject(projectId);
-        List<Branch> branches = gitLab.getBranches(project);
+        List<Branch> branches = gitLab.getBranches(projectId);
         assertNotNull(branches);
     }
 
@@ -99,19 +98,13 @@ class GitLabTest {
     @Test
     void updateFile() throws GitLabApiException {
         GitLab gitLab = getGitLab();
-        Project project = gitLab.getProject(projectId);
         String branchName = "master930";
-        Branch branch = gitLab.getBranch(project, "master930");
-        if (branch == null) {
-            System.out.println("找不到分支");
-            return;
-        }
         String filePath = "README.md";
-        RepositoryFile repositoryFile = gitLab.getRepositoryFile(project, branch, filePath);
+        RepositoryFile repositoryFile = gitLab.getRepositoryFile(projectId, branchName, filePath);
         String newContent = new String(Base64.getEncoder()
                 .encodeToString("test测试!@#$%^&*()_+|｜」「：“……&#¥%……&#¥%@#……#¥%".getBytes(StandardCharsets.UTF_8)));
         repositoryFile.setContent(newContent);
-        gitLab.updateFile(project, repositoryFile, branchName, "测试提交");
+        gitLab.updateFile(projectId, repositoryFile, branchName, "测试提交");
     }
 
 

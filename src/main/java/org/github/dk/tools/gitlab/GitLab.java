@@ -67,12 +67,11 @@ public class GitLab {
     /**
      * 获取某个项目所有分支
      *
-     * @param project 项目对象 {@link Project}
+     * @param projectId 项目Id
      * @return 返回该项目分支列表 {@link Branch}
      * @throws GitLabApiException
      */
-    public List<Branch> getBranches(Project project) throws GitLabApiException {
-        long projectId = project.getId();
+    public List<Branch> getBranches(final long projectId) throws GitLabApiException {
         return gitLabApi.getRepositoryApi().getBranches(projectId);
     }
 
@@ -108,16 +107,28 @@ public class GitLab {
     }
 
     /**
+     * 获取某个项目中指定分支中的文件
+     *
+     * @param projectId  项目ID
+     * @param branchName 分支名称
+     * @param filePath   文件路径
+     * @return {@link RepositoryFile} 返回文件对象
+     * @throws GitLabApiException 异常
+     */
+    public RepositoryFile getRepositoryFile(final long projectId, final String branchName, final String filePath) throws GitLabApiException {
+        return gitLabApi.getRepositoryFileApi().getFile(projectId, filePath, branchName);
+    }
+
+    /**
      * 更新文件
      *
-     * @param project       项目对象
+     * @param projectId     项目ID
      * @param file          文件对象
      * @param branchName    分支名称
      * @param commitMessage 提交信息
      * @throws GitLabApiException 异常
      */
-    public RepositoryFileResponse updateFile(final Project project, final RepositoryFile file, final String branchName, final String commitMessage) throws GitLabApiException {
-        long projectId = project.getId();
+    public RepositoryFileResponse updateFile(final long projectId, final RepositoryFile file, final String branchName, final String commitMessage) throws GitLabApiException {
         return gitLabApi.getRepositoryFileApi().updateFile(projectId, file, branchName, commitMessage);
     }
 
