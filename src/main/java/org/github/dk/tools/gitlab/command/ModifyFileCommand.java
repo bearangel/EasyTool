@@ -6,6 +6,7 @@ import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.models.Branch;
 import org.gitlab4j.api.models.RepositoryFile;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -14,6 +15,7 @@ import java.text.MessageFormat;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 修改文件
@@ -58,6 +60,17 @@ public class ModifyFileCommand implements Runnable {
     @Override
     public void run() {
         try {
+            if((branchName == null || branchName.isEmpty()) && System.console() != null) {
+                String keepRunning = System.console().readLine("没有指定分支，是否操作所有分支(y/n):");
+                while (!Objects.equals("y", keepRunning.toLowerCase())
+                        && !Objects.equals("n", keepRunning.toLowerCase())) {
+                    keepRunning = System.console().readLine("输入错误，请重新输入(y/n):");
+                }
+                if (Objects.equals("n", keepRunning.toLowerCase())) {
+                    System.out.println("退出执行");
+                }
+            }
+
             GitLabApi.ApiVersion gitLabApiVersion = switch (apiVersion) {
                 case "v3" -> GitLabApi.ApiVersion.V3;
                 default -> GitLabApi.ApiVersion.V4;
